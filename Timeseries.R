@@ -33,12 +33,19 @@ gold['day_year'] <- strftime(gold$Date, "%m/%y")
 gold['avg_price'] <- 0
 for (i in 1:nrow(gold)) {
   submonth <- subset(gold, day_year == day_year[i])
-    gold$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
-  }
-  
- 
-head(gold)
-  
+  gold$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
+}
+#oil monthly 
+oil['day_year'] <- strftime(oil$Date, "%m/%y")
+oil['avg_price'] <- 0
+for (i in 1:nrow(oil)) {
+  submonth <- subset(oil, day_year == day_year[i])
+  oil$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
+}
+
+
+head(oil)
+
 #read in oil 
 oil <- read.csv("oil2016.csv", stringsAsFactors=FALSE, header=TRUE)
 oil$Date <- as.Date(oil$Date, "%d-%B-%y")
@@ -57,20 +64,23 @@ timeseries <- subset(timeseries, select=c("Date", "oil", "sp", "gold", "gold_avg
 
 #unique TS for monthly gold 
 timeseries_month <- unique(timeseries$gold_avg, incomparables=FALSE)
+#same for oil 
+timeseries_month_oil <- unique(oil$avg_price, incomparables=FALSE)
 
 #create time series
 timeseries_all <- subset(timeseries, select=c("oil", "sp", "gold"))
 ts.all <- ts(data=timeseries_all)
-ts.oil<-ts(timeseries_all$oil) 
+ts.oil<-ts(timeseries_all$oil, start=c(2010))
+ts.oil_avg <- ts(timeseries_month_oil, start=c(2010), frequency=12)
+
 ts.gold <- ts(timeseries_all$gold)
-ts.gold_avg <- ts(timeseries_month)
+ts.gold_avg <- ts(timeseries_month, start=c(2010), frequency=12)
 ts.sp <- ts(timeseries_all$sp)
 
+#combine oil and gold monthly 
+ts.combo <- cbind(ts.oil_avg, ts.gold_avg)
+plot.ts(ts.combo)
 
-
-#set frequency 
-ts.gold_avg<-ts(timeseries_month, frequency= 12) 
-ts.gold_avg
 
 #check out in plots 
 par(mfrow=c(4, 1))
@@ -82,5 +92,11 @@ plot(ts.gold_avg)
 ts.gold_avg.d <- decompose(ts.gold_avg)
 plot(ts.gold_avg.d)
 
+help(ts)
+ts.oil <- ts(timeseries_all$oil, frequency=12)
+ts.oil.d <- decompose(ts.oil)
+plot(ts.oil.d)
+
+plot(ts.oil)
 ts.gold.1.d <- decompose(ts.gold.1)
 plot(ts.gold.1.d)
