@@ -30,7 +30,7 @@ gold_month
 gold['avg_price'] <- 0
 for (i in 1:nrow(gold)) {
   submonth <- subset(gold, day_year == day_year[i])
-    gold$avg_price[i] <- sum(submonth$Price) 
+    gold$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
   }
   
  
@@ -38,6 +38,7 @@ gold
   
 test <- subset(gold, day_year == "12/10")
 sum(test$Price)
+test
 
 test2 <- subset(gold, day_year == "02/10")
 sum(test2$Price)
