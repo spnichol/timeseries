@@ -71,13 +71,16 @@ ts.sp <- ts(timeseries_all$sp)
 #set frequency 
 ts.gold_avg<-ts(timeseries_month, frequency= 12) 
 ts.gold_avg
-help(ts)
+
+#check out in plots 
+par(mfrow=c(4, 1))
 plot(ts.all)
-plot(ts.gold.month1)
+plot(ts.gold_avg)
+
 
 #decompose 
-ts.gold.1<-ts(timeseries$gold_month_price)
-plot.ts(ts.gold.1)
+ts.gold_avg.d <- decompose(ts.gold_avg)
+plot(ts.gold_avg.d)
 
 ts.gold.1.d <- decompose(ts.gold.1)
 plot(ts.gold.1.d)
