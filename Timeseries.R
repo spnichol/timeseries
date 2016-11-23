@@ -49,25 +49,28 @@ oil <- oil[order(as.Date(oil$Date, format="%y/%m/%d")),]
 oil['oil'] <- oil$Price 
 sp['sp'] <- sp$Price
 gold['gold'] <- gold$Price
+gold['gold_avg'] <-gold$avg_price
+
 timeseries <- merge(oil, sp, by="Date")
 timeseries <- merge(timeseries, gold, by="Date")
-timeseries <- subset(timeseries, select=c("Date", "oil", "sp", "gold"))
-timeseries_all <- merge(timeseries, gold_month, by="Date", all.x=TRUE)
-timeseries_gold <- ts()
-summary(timeseries_all$gold_month_price.x)
-timeseries
+timeseries <- subset(timeseries, select=c("Date", "oil", "sp", "gold", "gold_avg"))
+
+#unique TS for monthly gold 
+timeseries_month <- unique(timeseries$gold_avg, incomparables=FALSE)
+
 #create time series
-timeseries <- subset(timeseries_all, select=c("oil", "sp", "gold", "gold_month_price.x"))
-ts.all <- ts(data=timeseries)
-ts.oil<-ts(timeseries$oil) 
-ts.gold <- ts(timeseries$gold)
-ts.sp <- ts(timeseries$sp)
-ts.gold.month <- ts(timeseries$gold_month_price)
+timeseries_all <- subset(timeseries, select=c("oil", "sp", "gold"))
+ts.all <- ts(data=timeseries_all)
+ts.oil<-ts(timeseries_all$oil) 
+ts.gold <- ts(timeseries_all$gold)
+ts.gold_avg <- ts(timeseries_month)
+ts.sp <- ts(timeseries_all$sp)
+
 
 
 #set frequency 
-ts.gold.month<-ts(timeseries$gold_month_price) 
-ts.gold.month
+ts.gold_avg<-ts(timeseries_month, frequency= 12) 
+ts.gold_avg
 help(ts)
 plot(ts.all)
 plot(ts.gold.month1)
