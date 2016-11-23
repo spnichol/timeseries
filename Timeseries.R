@@ -21,12 +21,14 @@ gold
 
 #create monthly intervals by just third day 
 gold['day']<- strftime(gold$Date, "%d")
-gold['day_year'] <- strftime(gold$Date, "%m/%y")
-head(gold)
+
+#create snapshot monthly price of Gold on third of month 
 gold_month <- subset(gold, gold$day == "03")
 gold_month['gold_month_price'] <- gold_month$Price
 gold_month <- subset(gold_month, select=c("gold_month_price"))
-gold_month
+
+#calculate average monthly price of Gold 
+gold['day_year'] <- strftime(gold$Date, "%m/%y")
 gold['avg_price'] <- 0
 for (i in 1:nrow(gold)) {
   submonth <- subset(gold, day_year == day_year[i])
@@ -34,7 +36,7 @@ for (i in 1:nrow(gold)) {
   }
   
  
-gold
+head(gold)
   
 test <- subset(gold, day_year == "12/10")
 sum(test$Price)
