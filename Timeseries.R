@@ -2,6 +2,7 @@
 library("lubridate")
 
 setwd("C:\\Users\\Steven\\Google Drive\\1. MOT\\1) Fall 2016\\1. BA\\Assignments\\Homework 6")
+#read in S&P 500 data 
 sp <- read.csv("sp.csv", stringsAsFactors=FALSE, header=TRUE)
 
 sp$Date <- as.Date(sp$Date, "%d-%B-%y")
@@ -13,7 +14,7 @@ sp <- sp[order(as.Date(sp$Date, format="%Y/%m/%d", decreasing=FALSE)),]
 
 sp_descending <- sp[rev(order(as.Date(sp$Date))),]
 
-
+#read in gold 
 gold <- read.csv("gold2016.csv", stringsAsFactors=FALSE, header=TRUE)
 gold$Date <- as.Date(gold$Date, "%d-%B-%y")
 gold <- gold[order(as.Date(gold$Date, format="%y/%m/%d")),]
@@ -38,18 +39,12 @@ for (i in 1:nrow(gold)) {
  
 head(gold)
   
-test <- subset(gold, day_year == "12/10")
-sum(test$Price)
-test
-
-test2 <- subset(gold, day_year == "02/10")
-sum(test2$Price)
+#read in oil 
 oil <- read.csv("oil2016.csv", stringsAsFactors=FALSE, header=TRUE)
 oil$Date <- as.Date(oil$Date, "%d-%B-%y")
 oil <- oil[order(as.Date(oil$Date, format="%y/%m/%d")),]
 
 #merge
-help(date)
 
 oil['oil'] <- oil$Price 
 sp['sp'] <- sp$Price
