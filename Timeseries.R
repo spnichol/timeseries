@@ -142,7 +142,7 @@ gold.holt_fore <- forecast.HoltWinters(gold.holt, h=12)
 
 plot(gold.holt_fore)
 
-#----gold daily 
+#----gold daily (not working)
 gold.daily.holt <- HoltWinters(ts_goldgold, gamma=FALSE)
 gold.daily.holt.fore <- forecast.HoltWinters(gold.daily.holt)
 plot(gold.daily.holt.fore)
@@ -155,6 +155,12 @@ oil.holt_fore <- forecast.HoltWinters(oil.holt, h=12)
 
 plot(oil.holt_fore)
 
+#----SP monthly 
+sp.holt <- HoltWinters(ts.sp_avg, gamma=FALSE)
+plot(sp.holt)
+sp.holt_fore <- forecast.HoltWinters(sp.holt, h=12)
+plot(sp.holt_fore)
+
 #try seasonal forecast 
 #---gold seasonal 
 gold.holt.seasonal <- HoltWinters(ts.gold_avg, gamma=TRUE)
@@ -164,10 +170,13 @@ plot(gold.holt.seasonal)
 
 #oil seasonal 
 oil.holt.seasonal <- HoltWinters(ts.gold_avg, gamma=TRUE)
-oil.holt.seasonal.fore <- forecast.HoltWinters(oil.holt.seasonal, gamma=TRUE)
+oil.holt.seasonal.fore <- forecast.HoltWinters(oil.holt.seasonal)
 plot(oil.holt.seasonal.fore)
 
-
+#sp seasonal 
+sp.holt.seasonal <- HoltWinters(ts.sp_avg, gamma=TRUE)
+sp.holt.seasonal.fore <- forecast.HoltWinters(sp.holt.seasonal)
+plot(sp.holt.seasonal.fore)
 #check if data is stationary 
 
 require(tseries)
@@ -186,17 +195,28 @@ tsdiag(fit1)
 fit_2<- arima(ts.oil_avg, c(0,0,0))
 tsdiag(fit2)
 
+fit_3 <- arima(ts.sp_avg, c(0,0,0))
+tsdiag(fit_3)
+
 #get lazy and have R create fit for you 
+#---gold 
 fit_gold<- auto.arima(ts.gold_avg)
 fit_gold
 tsdiag(fit_gold)
 fit_gold <- arima(ts.gold_avg, c(1, 1, 1))
 
+#---oil 
 fit_oil <- auto.arima(ts.oil_avg)
 fit_oil
 tsdiag(fit_oil)
+fit_oil <- arima(ts.oil_avg, c(0,1, 1))
 
-fit_sp <- auto.arima()
+#---sp500
+fit_sp <- auto.arima(ts.sp_avg)
+fit_sp 
+tsdiag(fit_sp)
+fit_sp <- arima(ts.sp_avg, c(0,1,0))
+
 #create forecast 
 
 fit_gold <- forecast.Arima(fit_gold, h=12)
