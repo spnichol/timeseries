@@ -35,13 +35,7 @@ for (i in 1:nrow(gold)) {
   submonth <- subset(gold, day_year == day_year[i])
   gold$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
 }
-#oil monthly 
-oil['day_year'] <- strftime(oil$Date, "%m/%y")
-oil['avg_price'] <- 0
-for (i in 1:nrow(oil)) {
-  submonth <- subset(oil, day_year == day_year[i])
-  oil$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
-}
+
 
 
 head(oil)
@@ -51,6 +45,13 @@ oil <- read.csv("oil2016.csv", stringsAsFactors=FALSE, header=TRUE)
 oil$Date <- as.Date(oil$Date, "%d-%B-%y")
 oil <- oil[order(as.Date(oil$Date, format="%y/%m/%d")),]
 
+#oil monthly 
+oil['day_year'] <- strftime(oil$Date, "%m/%y")
+oil['avg_price'] <- 0
+for (i in 1:nrow(oil)) {
+  submonth <- subset(oil, day_year == day_year[i])
+  oil$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
+}
 #merge
 
 oil['oil'] <- oil$Price 
@@ -92,11 +93,20 @@ plot(ts.gold_avg)
 ts.gold_avg.d <- decompose(ts.gold_avg)
 plot(ts.gold_avg.d)
 
-help(ts)
-ts.oil <- ts(timeseries_all$oil, frequency=12)
-ts.oil.d <- decompose(ts.oil)
-plot(ts.oil.d)
+ts.oil_avg.d <- decompose(ts.oil_avg)
+
+plot(ts.oil_avg.d)
 
 plot(ts.oil)
 ts.gold.1.d <- decompose(ts.gold.1)
 plot(ts.gold.1.d)
+
+#begin forecast 
+library(forecast)
+gold.holt <- HoltWinters(ts.gold_avg, gamma=FALSE)
+gold.holt
+plot(gold.holt)
+
+oil.holt <- HoltWinters(ts.oil_avg, gamma=FALSE)
+oil.holt
+plot(oil.holt)
