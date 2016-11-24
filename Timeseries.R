@@ -81,7 +81,7 @@ ts.sp <- ts(timeseries_all$sp)
 #combine oil and gold monthly 
 ts.combo <- cbind(ts.oil_avg, ts.gold_avg)
 plot.ts(ts.combo)
-
+ts.gold_avg
 
 #check out in plots 
 par(mfrow=c(4, 1))
