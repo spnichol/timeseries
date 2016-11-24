@@ -126,21 +126,3 @@ require(tseries)
 adf.test(diff(diff(log(ts.gold_avg))))
 adf.test(diff(diff(log(ts.oil_avg))))
 adf.test(diff(diff(log(ts.oil))))
-
-
-library(forecast)  
-library(stats)
-#create standard ARIMA model with no differencing to see what changes are neccesary 
-fit_1<- arima(ts.gold_avg, c(0,0,0))
-par(mfrow=c(1,1))
-tsdiag(fit1)
-
-#get lazy and have R create fit for you 
-fit_gold<- auto.arima(ts.gold_avg)
-tsdiag(fit2)
-fit_gold
-#create forecast 
-
-fit_gold <- forecast.Arima(fit_gold)
-plot(fit_gold)
-summary(fit_gold)
