@@ -7,64 +7,93 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-library("lubridate")
 
 ```{r}
 setwd("C:\\Users\\Steven\\Google Drive\\1. MOT\\1) Fall 2016\\1. BA\\Assignments\\Homework 6")
 #read in S&P 500 data 
 sp <- read.csv("sp.csv", stringsAsFactors=FALSE, header=TRUE)
+```
 
+```{r}
 sp$Date <- as.Date(sp$Date, "%d-%B-%y")
+```
+
+
 #sort by date, starting with the oldest dates
+```{r}
 sp <- sp[order(as.Date(sp$Date, format="%Y/%m/%d", decreasing=FALSE)),]
+```
+
+
 
 #sort in decreasing fashion using reverse function (decreasing=TRUE does not work for dates)
 
-
+```{r}
 sp_descending <- sp[rev(order(as.Date(sp$Date))),]
 
+```
+
+
 #read in gold 
+```{r}
 gold <- read.csv("gold2016.csv", stringsAsFactors=FALSE, header=TRUE)
 gold$Date <- as.Date(gold$Date, "%d-%B-%y")
 gold <- gold[order(as.Date(gold$Date, format="%y/%m/%d")),]
+```
+
+
 
 
 #create monthly intervals by just third day 
+
+```{r}
 gold['day']<- strftime(gold$Date, "%d")
+```
 
 #create snapshot monthly price of Gold on third of month 
+```{r}
 gold_month <- subset(gold, gold$day == "03")
 gold_month['gold_month_price'] <- gold_month$Price
 gold_month <- subset(gold_month, select=c("gold_month_price"))
 
+```
+
+
 #calculate average monthly price of Gold 
+```{r}
 gold['day_year'] <- strftime(gold$Date, "%m/%y")
 gold['avg_price'] <- 0
 for (i in 1:nrow(gold)) {
   submonth <- subset(gold, day_year == day_year[i])
   gold$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
 }
+```
+
+
 
 
 
 #create training and test data for to gague forecast accuracy 
-gold_train <- subset(gold, Date > as.Date("2016-01-01") )
-gold_test <- subset(gold, Date < as.Date("2016-01-01")))
+```{r}
+gold_train <- subset(gold, Date > as.Date("2016-01-01"))
+gold_test <- subset(gold, Date < as.Date("2016-01-01"))
+```
 
 
-length(gold$Date > as.Date("2016-01-01"))
-#read in oil 
+
+
+#read in oil
+```{r}
 oil <- read.csv("oil2016.csv", stringsAsFactors=FALSE, header=TRUE)
 oil$Date <- as.Date(oil$Date, "%d-%B-%y")
 oil <- oil[order(as.Date(oil$Date, format="%y/%m/%d")),]
+```
+
+
 
 #oil monthly 
+```{r}
 oil['day_year'] <- strftime(oil$Date, "%m/%y")
 oil['avg_price'] <- 0
 for (i in 1:nrow(oil)) {
@@ -72,21 +101,32 @@ for (i in 1:nrow(oil)) {
   oil$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
 }
 
+```
+
+
 #s&p500 monthly 
+```{r}
 sp['day_year'] <- strftime(sp$Date, "%m/%y")
 sp['avg_price'] <- 0
 for (i in 1:nrow(sp)) {
   submonth <- subset(sp, day_year == day_year[i])
   sp$avg_price[i] <- (sum(submonth$Price))/length(submonth$Price)
 }
+```
+
+
 
 #create test/train data for oil 
+```{r}
 oil_train <- subset(oil, Date > as.Date("2016-01-01") )
 oil_test <- subset(oil, Date < as.Date("2016-01-01"))
+```
+
+
 
 
 #merge
-
+```{r}
 oil['oil'] <- oil$Price 
 sp['sp'] <- sp$Price
 gold['gold'] <- gold$Price
@@ -95,15 +135,23 @@ gold['gold_avg'] <-gold$avg_price
 timeseries <- merge(oil, sp, by="Date")
 timeseries <- merge(timeseries, gold, by="Date")
 timeseries <- subset(timeseries, select=c("Date", "oil", "sp", "gold", "gold_avg"))
+```
+
+
 
 #unique TS for monthly gold 
+```{r}
 timeseries_month <- unique(timeseries$gold_avg, incomparables=FALSE)
 #same for oil 
 timeseries_month_oil <- unique(oil$avg_price, incomparables=FALSE)
 #same for S&P
 timeseries_month_sp <- unique(sp$avg_price, incomparables=FALSE)
+```
+
+
 
 #create time series
+```{r}
 timeseries_all <- subset(timeseries, select=c("oil", "sp", "gold"))
 ts.all <- ts(data=timeseries_all)
 
@@ -111,10 +159,12 @@ ts.oil<-ts(timeseries_all$oil, start=c(2010))
 ts.oil_avg <- ts(timeseries_month_oil, start=c(2010), frequency=12)
 
 ts.gold <- ts(timeseries_all$gold, start=c(2010), frequency=5)
-ts.gold
+
 ```
 
-```{r pressure, echo=FALSE}
+
+
+```{r, echo=FALSE}
 plot.ts(ts.gold)
 ```
 
@@ -132,11 +182,11 @@ ts.sp_avg <- ts(timeseries_month_sp,  start=c(2010), frequency=12 )
 ts.combo <- cbind(ts.oil_avg, ts.gold_avg)
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot.ts(ts.combo)
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 #check out in plots 
 par(mfrow=c(4, 1))
 plot(ts.all)
@@ -148,7 +198,7 @@ plot(ts.gold_avg)
 ts.gold_avg.d <- decompose(ts.gold_avg)
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot(ts.gold_avg.d)
 ```
 
@@ -156,18 +206,18 @@ plot(ts.gold_avg.d)
 ts.oil_avg.d <- decompose(ts.oil_avg)
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot(ts.oil_avg.d)
 
 plot(ts.oil)
 ```
 
 ```{r}
-ts.gold.1.d <- decompose(ts.gold.1)
+ts.gold.1.d <- decompose(ts.gold_avg)
 
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot(ts.gold.1.d)
 ```
 
@@ -175,7 +225,7 @@ plot(ts.gold.1.d)
 ts.sp_avg.d <- decompose(ts.sp_avg)
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot(ts.sp_avg.d)
 ```
 
@@ -188,23 +238,19 @@ gold.holt <- HoltWinters(ts.gold_avg, gamma=FALSE)
 gold.holt_fore <- forecast.HoltWinters(gold.holt, h=12)
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot(gold.holt)
 
 plot(gold.holt_fore)
 ```
 
 #----gold daily (not working)
-```{r}
-gold.daily.holt <- HoltWinters(ts_goldgold, gamma=FALSE)
-gold.daily.holt.fore <- forecast.HoltWinters(gold.daily.holt)
-```
+#gold.daily.holt <- HoltWinters(ts_gold, gamma=FALSE)
+#gold.daily.holt.fore <- forecast.HoltWinters(gold.daily.holt)
 
-```{r pressure, echo=FALSE}
 
 plot(gold.daily.holt.fore)
 
-```
 
 
 #----oil monthly
@@ -214,7 +260,7 @@ oil.holt <- HoltWinters(ts.oil_avg, gamma=FALSE)
 oil.holt_fore <- forecast.HoltWinters(oil.holt, h=12)
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 
 plot(oil.holt_fore)
 plot(oil.holt)
@@ -227,7 +273,7 @@ sp.holt_fore <- forecast.HoltWinters(sp.holt, h=12)
 
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot(sp.holt_fore)
 plot(sp.holt)
 ```
@@ -237,7 +283,7 @@ plot(sp.holt)
 gold.holt.seasonal <- HoltWinters(ts.gold_avg, gamma=TRUE)
 gold.holt.seasonal <- forecast.HoltWinters(gold.holt.seasonal, h=12)
 ```
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 plot(gold.holt.seasonal)
 ```
 
@@ -251,7 +297,7 @@ sp.holt.seasonal <- HoltWinters(ts.sp_avg, gamma=TRUE)
 sp.holt.seasonal.fore <- forecast.HoltWinters(sp.holt.seasonal)
 
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 #check if data is stationary 
 plot(oil.holt.seasonal.fore)
 plot(sp.holt.seasonal.fore)
@@ -274,10 +320,13 @@ fit_3 <- arima(ts.sp_avg, c(0,0,0))
 
 ```
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
 par(mfrow=c(1,1))
-tsdiag(fit1)
-tsdiag(fit2)
+#ARIMA model for Gold (no differencing)
+tsdiag(fit_1)
+#ARIMA model for Oil (no differencing)
+tsdiag(fit_2)
+#ARIMA model for S&P500 (no differencing)
 tsdiag(fit_3)
 
 ```
@@ -287,27 +336,30 @@ tsdiag(fit_3)
 #get lazy and have R create fit for you 
 #---gold 
 fit_gold<- auto.arima(ts.gold_avg)
-fit_gold
 fit_gold <- arima(ts.gold_avg, c(1, 1, 1))
 
 #---oil 
 fit_oil <- auto.arima(ts.oil_avg)
-fit_oil
+
 
 fit_oil <- arima(ts.oil_avg, c(0,1, 1))
 
 #---sp500
 fit_sp <- auto.arima(ts.sp_avg)
-fit_sp 
+ 
 
 fit_sp <- arima(ts.sp_avg, c(0,1,0))
 ```
 
 
 
-```{r pressure, echo=FALSE}
+```{r, echo=FALSE}
+
+#oil ARIMA 
 tsdiag(fit_oil)
+#gold ARIMA 
 tsdiag(fit_gold)
+#sp ARIMA 
 tsdiag(fit_sp)
 ```
 
@@ -318,5 +370,5 @@ fit_gold <- forecast.Arima(fit_gold, h=12)
 plot(fit_gold)
 summary(fit_gold)
 
-```{r}
+```
 
