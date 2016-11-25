@@ -7,7 +7,7 @@
 
 ```r
 setwd("C:\\Users\\Steven\\Google Drive\\1. MOT\\1) Fall 2016\\1. BA\\Assignments\\Homework 6")
-#read in S&P 500 data 
+ 
 sp <- read.csv("sp.csv", stringsAsFactors=FALSE, header=TRUE)
 ```
 
@@ -106,7 +106,6 @@ for (i in 1:nrow(oil)) {
 }
 ```
 
-
 #s&p500 monthly 
 
 ```r
@@ -145,19 +144,19 @@ timeseries <- subset(timeseries, select=c("Date", "oil", "sp", "gold", "gold_avg
 
 
 
-#unique TS for monthly gold 
+#unique TS for monthly values  
 
 ```r
 timeseries_month <- unique(timeseries$gold_avg, incomparables=FALSE)
-#same for oil 
+
 timeseries_month_oil <- unique(oil$avg_price, incomparables=FALSE)
-#same for S&P
+
 timeseries_month_sp <- unique(sp$avg_price, incomparables=FALSE)
 ```
 
 
 
-#create time series
+#Create time series
 
 ```r
 timeseries_all <- subset(timeseries, select=c("oil", "sp", "gold"))
@@ -170,6 +169,7 @@ ts.gold <- ts(timeseries_all$gold, start=c(2010), frequency=5)
 ```
 
 
+#Gold Time Series (Daily)
 
 ![](rmarkdown_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
@@ -185,19 +185,58 @@ ts.sp_avg <- ts(timeseries_month_sp,  start=c(2010), frequency=12 )
 
 #combine oil and gold monthly 
 
+
 ```r
 ts.combo <- cbind(ts.oil_avg, ts.gold_avg)
 ```
 
 ![](rmarkdown_files/figure-html/unnamed-chunk-20-1.png)<!-- -->
-
-![](rmarkdown_files/figure-html/unnamed-chunk-21-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-21-2.png)<!-- -->
+#Oil and Gold Monthly Correlation  
+![](rmarkdown_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
 
 
 ```r
-#decompose 
+ decompose 
+```
+
+```
+## function (x, type = c("additive", "multiplicative"), filter = NULL) 
+## {
+##     type <- match.arg(type)
+##     l <- length(x)
+##     f <- frequency(x)
+##     if (f <= 1 || length(na.omit(x)) < 2 * f) 
+##         stop("time series has no or less than 2 periods")
+##     if (is.null(filter)) 
+##         filter <- if (!f%%2) 
+##             c(0.5, rep_len(1, f - 1), 0.5)/f
+##         else rep_len(1, f)/f
+##     trend <- filter(x, filter)
+##     season <- if (type == "additive") 
+##         x - trend
+##     else x/trend
+##     periods <- l%/%f
+##     index <- seq.int(1L, l, by = f) - 1L
+##     figure <- numeric(f)
+##     for (i in 1L:f) figure[i] <- mean(season[index + i], na.rm = TRUE)
+##     figure <- if (type == "additive") 
+##         figure - mean(figure)
+##     else figure/mean(figure)
+##     seasonal <- ts(rep(figure, periods + 1)[seq_len(l)], start = start(x), 
+##         frequency = f)
+##     structure(list(x = x, seasonal = seasonal, trend = trend, 
+##         random = if (type == "additive") x - seasonal - trend else x/seasonal/trend, 
+##         figure = figure, type = type), class = "decomposed.ts")
+## }
+## <bytecode: 0x0000000012315b08>
+## <environment: namespace:stats>
+```
+
+```r
 ts.gold_avg.d <- decompose(ts.gold_avg)
 ```
+
+#Gold Monthly Average Time Series - Decomposed 
 
 ![](rmarkdown_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
 
@@ -206,12 +245,16 @@ ts.gold_avg.d <- decompose(ts.gold_avg)
 ts.oil_avg.d <- decompose(ts.oil_avg)
 ```
 
+#Oil Monthly Average Time Series - Decomposed 
+
 ![](rmarkdown_files/figure-html/unnamed-chunk-25-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-25-2.png)<!-- -->
 
 
 ```r
 ts.gold.1.d <- decompose(ts.gold_avg)
 ```
+
+#Gold Monthly Average Time Series 
 
 ![](rmarkdown_files/figure-html/unnamed-chunk-27-1.png)<!-- -->
 
@@ -220,9 +263,13 @@ ts.gold.1.d <- decompose(ts.gold_avg)
 ts.sp_avg.d <- decompose(ts.sp_avg)
 ```
 
+#SP 500 Monthly Average Time Series 
+
 ![](rmarkdown_files/figure-html/unnamed-chunk-29-1.png)<!-- -->
 
-#begin forecast with HoltWinters 
+
+#Gold forecast with HoltWinters 
+
 
 ```r
 library(forecast)
@@ -275,24 +322,17 @@ library(forecast)
 ```
 
 ```r
-#----gold monthly 
 gold.holt <- HoltWinters(ts.gold_avg, gamma=FALSE)
 
 gold.holt_fore <- forecast.HoltWinters(gold.holt, h=12)
 ```
 
+#Gold Forecast (Holt Winters)
+
 ![](rmarkdown_files/figure-html/unnamed-chunk-31-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-31-2.png)<!-- -->
 
-#----gold daily (not working)
-#gold.daily.holt <- HoltWinters(ts_gold, gamma=FALSE)
-#gold.daily.holt.fore <- forecast.HoltWinters(gold.daily.holt)
 
-
-plot(gold.daily.holt.fore)
-
-
-
-#----oil monthly
+#Oil Forecast (Holt Winters)
 
 
 ```r
@@ -300,8 +340,11 @@ oil.holt <- HoltWinters(ts.oil_avg, gamma=FALSE)
 oil.holt_fore <- forecast.HoltWinters(oil.holt, h=12)
 ```
 
+#Oil Forecast (Holt Winters)
+
 ![](rmarkdown_files/figure-html/unnamed-chunk-33-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-33-2.png)<!-- -->
-#----SP monthly 
+
+#S&P Forecast (Holt Winters)
 
 
 ```r
@@ -309,9 +352,13 @@ sp.holt <- HoltWinters(ts.sp_avg, gamma=FALSE)
 sp.holt_fore <- forecast.HoltWinters(sp.holt, h=12)
 ```
 
+#S&P Forecast (Holt Winters)
+
 ![](rmarkdown_files/figure-html/unnamed-chunk-35-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-35-2.png)<!-- -->
-#try seasonal forecast 
-#---gold seasonal 
+ 
+
+#gold seasonal (HoltWinters forecast)
+
 
 ```r
 gold.holt.seasonal <- HoltWinters(ts.gold_avg, gamma=TRUE)
@@ -319,17 +366,19 @@ gold.holt.seasonal <- forecast.HoltWinters(gold.holt.seasonal, h=12)
 ```
 ![](rmarkdown_files/figure-html/unnamed-chunk-37-1.png)<!-- -->
 
-#oil seasonal 
+#oil seasonal (HoltWinters forecast)
+
 
 ```r
 oil.holt.seasonal <- HoltWinters(ts.gold_avg, gamma=TRUE)
 oil.holt.seasonal.fore <- forecast.HoltWinters(oil.holt.seasonal)
 
-#sp seasonal 
 sp.holt.seasonal <- HoltWinters(ts.sp_avg, gamma=TRUE)
 sp.holt.seasonal.fore <- forecast.HoltWinters(sp.holt.seasonal)
 ```
 ![](rmarkdown_files/figure-html/unnamed-chunk-39-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-39-2.png)<!-- -->
+
+#test data for stationarity 
 
 
 ```r
@@ -398,33 +447,44 @@ adf.test(diff(diff(log(ts.oil))))
 ## alternative hypothesis: stationary
 ```
 
+#create standard ARIMA model with no differencing to see what changes are neccesary
+
 
 ```r
 library(forecast)  
 library(stats)
-#create standard ARIMA model with no differencing to see what changes are neccesary 
+ 
 fit_1<- arima(ts.gold_avg, c(0,0,0))
 fit_2<- arima(ts.oil_avg, c(0,0,0))
 fit_3 <- arima(ts.sp_avg, c(0,0,0))
 ```
 
-![](rmarkdown_files/figure-html/unnamed-chunk-42-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-42-2.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-42-3.png)<!-- -->
+#ARIMA model for Gold (no differencing)
 
+![](rmarkdown_files/figure-html/unnamed-chunk-42-1.png)<!-- -->
+
+#ARIMA model for Oil (no differencing)
+
+![](rmarkdown_files/figure-html/unnamed-chunk-43-1.png)<!-- -->
+
+#ARIMA model for S&P500 (no differencing)
+
+![](rmarkdown_files/figure-html/unnamed-chunk-44-1.png)<!-- -->
+
+
+#get lazy and have R create fit for you 
 
 
 ```r
-#get lazy and have R create fit for you 
-#---gold 
 fit_gold<- auto.arima(ts.gold_avg)
 fit_gold <- arima(ts.gold_avg, c(1, 1, 1))
 
-#---oil 
 fit_oil <- auto.arima(ts.oil_avg)
 
 
 fit_oil <- arima(ts.oil_avg, c(0,1, 1))
 
-#---sp500
+
 fit_sp <- auto.arima(ts.sp_avg)
  
 
@@ -432,17 +492,33 @@ fit_sp <- arima(ts.sp_avg, c(0,1,0))
 ```
 
 
+#gold ARIMA 
 
-![](rmarkdown_files/figure-html/unnamed-chunk-44-1.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-44-2.png)<!-- -->![](rmarkdown_files/figure-html/unnamed-chunk-44-3.png)<!-- -->
+![](rmarkdown_files/figure-html/unnamed-chunk-46-1.png)<!-- -->
+
+
+#oil ARIMA 
+
+![](rmarkdown_files/figure-html/unnamed-chunk-47-1.png)<!-- -->
+
+#sp ARIMA
+
+![](rmarkdown_files/figure-html/unnamed-chunk-48-1.png)<!-- -->
+
+
+ 
+
+
 
 #create forecast 
+
 
 ```r
 fit_gold <- forecast.Arima(fit_gold, h=12)
 plot(fit_gold)
 ```
 
-![](rmarkdown_files/figure-html/unnamed-chunk-45-1.png)<!-- -->
+![](rmarkdown_files/figure-html/unnamed-chunk-49-1.png)<!-- -->
 
 ```r
 summary(fit_gold)

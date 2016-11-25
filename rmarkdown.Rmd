@@ -2,9 +2,10 @@
 title: "homework 6"
 output: 
   html_document: 
+    highlight: monochrome
     keep_md: yes
     number_sections: yes
-    theme: readable
+    theme: journal
     toc: yes
 ---
 
@@ -16,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 setwd("C:\\Users\\Steven\\Google Drive\\1. MOT\\1) Fall 2016\\1. BA\\Assignments\\Homework 6")
-#read in S&P 500 data 
+ 
 sp <- read.csv("sp.csv", stringsAsFactors=FALSE, header=TRUE)
 ```
 
@@ -108,7 +109,6 @@ for (i in 1:nrow(oil)) {
 
 ```
 
-
 #s&p500 monthly 
 ```{r}
 sp['day_year'] <- strftime(sp$Date, "%m/%y")
@@ -144,18 +144,18 @@ timeseries <- subset(timeseries, select=c("Date", "oil", "sp", "gold", "gold_avg
 
 
 
-#unique TS for monthly gold 
+#unique TS for monthly values  
 ```{r}
 timeseries_month <- unique(timeseries$gold_avg, incomparables=FALSE)
-#same for oil 
+
 timeseries_month_oil <- unique(oil$avg_price, incomparables=FALSE)
-#same for S&P
+
 timeseries_month_sp <- unique(sp$avg_price, incomparables=FALSE)
 ```
 
 
 
-#create time series
+#Create time series
 ```{r}
 timeseries_all <- subset(timeseries, select=c("oil", "sp", "gold"))
 ts.all <- ts(data=timeseries_all)
@@ -168,6 +168,7 @@ ts.gold <- ts(timeseries_all$gold, start=c(2010), frequency=5)
 ```
 
 
+#Gold Time Series (Daily)
 
 ```{r, echo=FALSE}
 plot.ts(ts.gold)
@@ -183,6 +184,7 @@ ts.sp_avg <- ts(timeseries_month_sp,  start=c(2010), frequency=12 )
 
 
 #combine oil and gold monthly 
+
 ```{r}
 ts.combo <- cbind(ts.oil_avg, ts.gold_avg)
 ```
@@ -190,18 +192,21 @@ ts.combo <- cbind(ts.oil_avg, ts.gold_avg)
 ```{r, echo=FALSE}
 plot.ts(ts.combo)
 ```
-
+#Oil and Gold Monthly Correlation  
 ```{r, echo=FALSE}
-#check out in plots 
-par(mfrow=c(4, 1))
-plot(ts.all)
+
+par(mfrow=c(2, 1))
+
 plot(ts.gold_avg)
+plot(ts.oil_avg)
 ```
 
 ```{r}
-#decompose 
+ decompose 
 ts.gold_avg.d <- decompose(ts.gold_avg)
 ```
+
+#Gold Monthly Average Time Series - Decomposed 
 
 ```{r, echo=FALSE}
 plot(ts.gold_avg.d)
@@ -210,6 +215,8 @@ plot(ts.gold_avg.d)
 ```{r}
 ts.oil_avg.d <- decompose(ts.oil_avg)
 ```
+
+#Oil Monthly Average Time Series - Decomposed 
 
 ```{r, echo=FALSE}
 plot(ts.oil_avg.d)
@@ -222,6 +229,8 @@ ts.gold.1.d <- decompose(ts.gold_avg)
 
 ```
 
+#Gold Monthly Average Time Series 
+
 ```{r, echo=FALSE}
 plot(ts.gold.1.d)
 ```
@@ -230,18 +239,24 @@ plot(ts.gold.1.d)
 ts.sp_avg.d <- decompose(ts.sp_avg)
 ```
 
+#SP 500 Monthly Average Time Series 
+
 ```{r, echo=FALSE}
 plot(ts.sp_avg.d)
 ```
 
-#begin forecast with HoltWinters 
+
+#Gold forecast with HoltWinters 
+
 ```{r}
 library(forecast)
-#----gold monthly 
+
 gold.holt <- HoltWinters(ts.gold_avg, gamma=FALSE)
 
 gold.holt_fore <- forecast.HoltWinters(gold.holt, h=12)
 ```
+
+#Gold Forecast (Holt Winters)
 
 ```{r, echo=FALSE}
 plot(gold.holt)
@@ -249,28 +264,24 @@ plot(gold.holt)
 plot(gold.holt_fore)
 ```
 
-#----gold daily (not working)
-#gold.daily.holt <- HoltWinters(ts_gold, gamma=FALSE)
-#gold.daily.holt.fore <- forecast.HoltWinters(gold.daily.holt)
 
-
-plot(gold.daily.holt.fore)
-
-
-
-#----oil monthly
+#Oil Forecast (Holt Winters)
 
 ```{r}
 oil.holt <- HoltWinters(ts.oil_avg, gamma=FALSE)
 oil.holt_fore <- forecast.HoltWinters(oil.holt, h=12)
+
 ```
+
+#Oil Forecast (Holt Winters)
 
 ```{r, echo=FALSE}
 
 plot(oil.holt_fore)
 plot(oil.holt)
 ```
-#----SP monthly 
+
+#S&P Forecast (Holt Winters)
 
 ```{r}
 sp.holt <- HoltWinters(ts.sp_avg, gamma=FALSE)
@@ -278,12 +289,16 @@ sp.holt_fore <- forecast.HoltWinters(sp.holt, h=12)
 
 ```
 
+#S&P Forecast (Holt Winters)
+
 ```{r, echo=FALSE}
 plot(sp.holt_fore)
 plot(sp.holt)
 ```
-#try seasonal forecast 
-#---gold seasonal 
+ 
+
+#gold seasonal (HoltWinters forecast)
+
 ```{r}
 gold.holt.seasonal <- HoltWinters(ts.gold_avg, gamma=TRUE)
 gold.holt.seasonal <- forecast.HoltWinters(gold.holt.seasonal, h=12)
@@ -292,21 +307,23 @@ gold.holt.seasonal <- forecast.HoltWinters(gold.holt.seasonal, h=12)
 plot(gold.holt.seasonal)
 ```
 
-#oil seasonal 
+#oil seasonal (HoltWinters forecast)
+
 ```{r}
 oil.holt.seasonal <- HoltWinters(ts.gold_avg, gamma=TRUE)
 oil.holt.seasonal.fore <- forecast.HoltWinters(oil.holt.seasonal)
 
-#sp seasonal 
 sp.holt.seasonal <- HoltWinters(ts.sp_avg, gamma=TRUE)
 sp.holt.seasonal.fore <- forecast.HoltWinters(sp.holt.seasonal)
 
 
 ```{r, echo=FALSE}
-#check if data is stationary 
+ 
 plot(oil.holt.seasonal.fore)
 plot(sp.holt.seasonal.fore)
 ```
+
+#test data for stationarity 
 
 ```{r}
 require(tseries)
@@ -315,41 +332,54 @@ adf.test(diff(diff(log(ts.oil_avg))))
 adf.test(diff(diff(log(ts.oil))))
 ```
 
+#create standard ARIMA model with no differencing to see what changes are neccesary
+
 ```{r}
 library(forecast)  
 library(stats)
-#create standard ARIMA model with no differencing to see what changes are neccesary 
+ 
 fit_1<- arima(ts.gold_avg, c(0,0,0))
 fit_2<- arima(ts.oil_avg, c(0,0,0))
 fit_3 <- arima(ts.sp_avg, c(0,0,0))
 
 ```
 
-```{r, echo=FALSE}
-par(mfrow=c(1,1))
 #ARIMA model for Gold (no differencing)
-tsdiag(fit_1)
-#ARIMA model for Oil (no differencing)
-tsdiag(fit_2)
-#ARIMA model for S&P500 (no differencing)
-tsdiag(fit_3)
 
+```{r, echo=FALSE}
+
+tsdiag(fit_1)
+```
+
+#ARIMA model for Oil (no differencing)
+
+```{r, echo=FALSE}
+
+tsdiag(fit_2)
+```
+
+#ARIMA model for S&P500 (no differencing)
+
+```{r, echo=FALSE}
+
+tsdiag(fit_3)
 ```
 
 
-```{r}
 #get lazy and have R create fit for you 
-#---gold 
+
+```{r}
+
+
 fit_gold<- auto.arima(ts.gold_avg)
 fit_gold <- arima(ts.gold_avg, c(1, 1, 1))
 
-#---oil 
 fit_oil <- auto.arima(ts.oil_avg)
 
 
 fit_oil <- arima(ts.oil_avg, c(0,1, 1))
 
-#---sp500
+
 fit_sp <- auto.arima(ts.sp_avg)
  
 
@@ -357,18 +387,33 @@ fit_sp <- arima(ts.sp_avg, c(0,1,0))
 ```
 
 
+#gold ARIMA 
 
 ```{r, echo=FALSE}
+tsdiag(fit_gold)
+```
+
 
 #oil ARIMA 
+
+```{r, echo=FALSE}
 tsdiag(fit_oil)
-#gold ARIMA 
-tsdiag(fit_gold)
-#sp ARIMA 
+
+```
+
+#sp ARIMA
+
+```{r, echo=FALSE}
 tsdiag(fit_sp)
 ```
 
+
+ 
+
+
+
 #create forecast 
+
 ```{r}
 
 fit_gold <- forecast.Arima(fit_gold, h=12)
